@@ -59,6 +59,8 @@ The signed boolean is counterparty-portable. Agent A can hand it to Agent B, who
 
 **Boolean, not balance**: standard mode returns only the pass/fail result. The wallet's actual holdings never leave the verification layer. Merkle mode is available for callers who need the raw balance for client-side proof reconstruction — it costs double and is opt-in.
 
+**Agents pay for their own access**: when an agent burns through its free credits in production, it refills its own key on-chain via `POST /v1/credits/buy` (USDC, USDT, or BTC) — no Stripe, no human approval, no subscription renewal. The key keeps its identity, history, and integrations; credits just increment. This is the only continuous-identity upgrade path and the one that makes the "agent pays for its own access" loop real.
+
 ## Endpoints (the two the skill uses)
 
 - `POST /v1/attest` — 1–10 custom conditions, per-condition booleans, one overall `pass`. 1 credit.
