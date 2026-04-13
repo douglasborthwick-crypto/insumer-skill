@@ -1,17 +1,38 @@
 ---
 name: insumer
-description: Use when the user wants to add wallet auth, condition-based access, token gating, on-chain eligibility checks, pre-transaction trust signals, or verify a wallet holds specific assets across chains. Produces code that calls api.insumermodel.com and verifies responses offline via JWKS. Works in any language. Trigger phrases include "wallet auth", "add wallet verification", "gate by token holdings", "token gating", "on-chain eligibility", "condition-based access", "pre-transaction trust", "verify wallet holds", "wallet_state", "wallet state".
+description: Add wallet auth to a project — condition-based access across 33 chains,
+  signed booleans, JWKS-verifiable offline. Use when the user wants to gate a feature
+  by token holdings, verify wallet eligibility, add on-chain trust checks, add token
+  gating, check delegated authority or EAS attestations, or compose a `wallet_state`
+  signal for a multi-issuer trust envelope.
 ---
 
 # insumer — wallet auth for Claude Code
 
-`insumer` adds **wallet auth** to your project — the same way you'd add OAuth, but for what a wallet holds instead of who the user is.
+Add **wallet auth** to a project — the same way you'd add OAuth, but for what a wallet holds instead of who the user is. Boolean, not balance.
 
-**Category**: condition-based access. You send a wallet and a condition (token balance, NFT ownership, delegated authority, on-chain attestation), and you get back a cryptographically signed yes or no. Verifiable offline against a public JWKS. No API keys in client code, no identity broker, no static credentials, no per-counterparty trust chain.
+## Quick Start
 
-**Primitive**: read → evaluate → sign. The API reads blockchain state, evaluates it against the condition you sent, and signs the result with ES256 (ECDSA P-256). The signed boolean is portable — any downstream service can verify it against the JWKS without calling the API back.
+1. Tell the user to run this once to get a free API key (10 starter credits + 100 `/v1/attest` calls per day, no signup):
 
-**What you get**: a counterparty-portable yes/no that works across 33 chains (26 EVM chains with Merkle proofs, 4 more EVM without, plus Solana, XRPL, and Bitcoin). Boolean, not balance — the wallet never leaks its holdings, just whether it meets the condition.
+   ```bash
+   curl -s -X POST https://api.insumermodel.com/v1/keys/create \
+     -H "Content-Type: application/json" \
+     -d '{"email":"you@example.com","appName":"insumer-skill","tier":"free"}'
+   ```
+
+2. Put the returned `key` in their `.env` as `INSUMER_API_KEY`.
+
+3. Write the integration code using `reference/endpoints.md` for exact shapes and `examples/gate-express.ts` as the reference pattern. Always include offline JWKS verification — never trust the JSON body alone.
+
+4. Verify the output against `forbidden.md` before handing it back. If it violates any hard-stop pattern (inline keys, unverified responses, raw balance leaks, wrong USDC decimals, browser calls), fix it before replying.
+
+## What this primitive is
+
+- **Category**: condition-based access. Send a wallet and a condition (token balance, NFT ownership, delegated authority, on-chain attestation), get back a cryptographically signed yes or no.
+- **Primitive**: read → evaluate → sign. The API reads blockchain state, evaluates the condition, and signs the result with ES256 (ECDSA P-256). The signed boolean is portable — any downstream service can verify it against the public JWKS without calling the API back.
+- **Coverage**: 33 chains. 26 EVM chains with optional Merkle storage proofs, 4 more EVM without, plus Solana, XRPL, and Bitcoin.
+- **What you return to the caller**: the signed boolean — never the raw balance. Standard mode is boolean-not-balance by construction; Merkle mode is opt-in and costs double because it reveals the balance.
 
 ## When to reach for this skill
 
