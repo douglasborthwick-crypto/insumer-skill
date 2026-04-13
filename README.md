@@ -66,6 +66,41 @@ The signed boolean is counterparty-portable. Agent A can hand it to Agent B, who
 
 Full shapes in `reference/endpoints.md`.
 
+## Try the example end-to-end (2 minutes)
+
+The `examples/gate-express.ts` file is a working Express server. Verify the full flow — API call, JWKS fetch, offline signature verification, gating — in a scratch dir:
+
+```bash
+mkdir /tmp/insumer-skill-try && cd /tmp/insumer-skill-try
+npm init -y >/dev/null
+npm install express jose tsx typescript @types/express @types/node >/dev/null
+curl -sO https://raw.githubusercontent.com/douglasborthwick-crypto/insumer-skill/main/examples/gate-express.ts
+
+# Get a free key (if you haven't already)
+curl -s -X POST https://api.insumermodel.com/v1/keys/create \
+  -H "Content-Type: application/json" \
+  -d '{"email":"you@example.com","appName":"insumer-skill","tier":"free"}'
+# → copy the "key" field
+
+# Start the server
+INSUMER_API_KEY=insr_live_... npx tsx gate-express.ts
+```
+
+In another terminal:
+
+```bash
+# Fail path: a wallet without 100 USDC on Base → 403 with signed attestation metadata, no raw balance
+curl -sS "http://localhost:3000/premium?wallet=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+
+# Success path (lower MIN_USDC in gate-express.ts to 1 for a quick check with a whale):
+curl -sS "http://localhost:3000/premium?wallet=0x28C6c06298d514Db089934071355E5743bf21d60"
+
+# Validation path: 400 before any API call
+curl -sS "http://localhost:3000/premium?wallet=notawallet"
+```
+
+The 403 response includes `attestationId`, `blockNumber`, and `blockTimestamp` — enough for a downstream auditor to re-verify — but never the raw balance. That is boolean-not-balance in practice.
+
 ## Related tools
 
 - [`mcp-server-insumer`](https://github.com/douglasborthwick-crypto/mcp-server-insumer) — MCP server for runtime agent access to the same API. Install this if you want an agent to *call* InsumerAPI at runtime; install `insumer-skill` if you want Claude Code to help you *write* code that calls it.
