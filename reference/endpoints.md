@@ -45,7 +45,7 @@ X-API-Key: insr_live_...
 | Flag | Value | Effect |
 |---|---|---|
 | `format` | `"jwt"` | Adds a ready-to-verify ES256 JWT to the response (no extra credit cost) |
-| `proof` | `"merkle"` | Adds EIP-1186 Merkle storage proofs for `token_balance` conditions on 26 of 30 EVM chains. Costs 2 credits instead of 1. Note: Merkle mode reveals the raw balance — standard mode never does. |
+| `proof` | `"merkle"` | Adds EIP-1186 Merkle storage proofs for `token_balance` conditions on 27 of 30 EVM chains. Costs 2 credits instead of 1. Note: Merkle mode reveals the raw balance — standard mode never does. |
 
 **Condition types**: `token_balance`, `nft_ownership`, `eas_attestation`, `farcaster_id`.
 
@@ -175,7 +175,7 @@ Verify the JWT with any standard library pointed at `https://insumermodel.com/.w
 | `data.attestation.results[].met` | Per-condition boolean |
 | `data.attestation.results[].evaluatedCondition` | Canonical form of the condition that was actually evaluated (may differ from your input if the API normalized operators or defaults) |
 | `data.attestation.results[].conditionHash` | SHA-256 of `evaluatedCondition`, prefixed `0x`. Callers can recompute to verify the condition wasn't tampered with. |
-| `data.attestation.results[].blockNumber` | Hex block number (26 of 30 EVM chains; omitted for Taiko, Ronin, Moonriver, Viction, Solana, XRPL) |
+| `data.attestation.results[].blockNumber` | Hex block number (all 30 EVM chains; Solana uses `slot`, XRPL uses `ledgerIndex`). API returns 503 if the anchor can't be captured rather than signing a partial result. |
 | `data.attestation.results[].blockTimestamp` | ISO 8601 timestamp of the evaluation block |
 | `data.sig` | Base64 P1363 ES256 signature over the canonical `data.attestation` object (88 chars) |
 | `data.kid` | Signing key ID — look up in JWKS |
