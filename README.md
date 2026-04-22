@@ -4,7 +4,7 @@
 
 > OAuth proves who the user is. Wallet auth proves what the wallet holds. Boolean, not balance.
 
-> **Not in Claude Code?** This repo is Claude-Code-specific. For Cursor, GitHub Copilot, OpenAI Codex, Gemini CLI, JetBrains Junie, Sourcegraph Amp, Block Goose, and 25+ other IDEs supporting the [agentskills.io](https://agentskills.io) open standard, use [`insumer-agent-skills`](https://github.com/douglasborthwick-crypto/insumer-agent-skills) — same wallet auth primitive, multi-agent install via `npx skills add insumer/insumer-agent-skills`.
+> **Not in Claude Code?** This repo is Claude-Code-specific. For Cursor, GitHub Copilot, OpenAI Codex, Gemini CLI, JetBrains Junie, Sourcegraph Amp, Block Goose, and 25+ other IDEs supporting the [agentskills.io](https://agentskills.io) open standard, use [`insumer-agent-skills`](https://github.com/douglasborthwick-crypto/insumer-agent-skills) — same wallet auth primitive, multi-agent install via `npx skills add douglasborthwick-crypto/insumer-agent-skills`.
 
 ## What this skill does
 
@@ -120,7 +120,7 @@ The 403 response includes `attestationId`, `blockNumber`, and `blockTimestamp` �
 
 ## Related tools
 
-- [`insumer-agent-skills`](https://github.com/douglasborthwick-crypto/insumer-agent-skills) — same wallet auth primitive packaged for the [agentskills.io](https://agentskills.io) open standard. Installable in Cursor, Copilot, Codex, Gemini CLI, JetBrains Junie, Block Goose, Sourcegraph Amp, Letta, Roo Code, and 25+ other agentskills-compatible IDEs via `npx skills add insumer/insumer-agent-skills`. Use this if you want the same wallet-auth behavior in any agent that isn't Claude Code.
+- [`insumer-agent-skills`](https://github.com/douglasborthwick-crypto/insumer-agent-skills) — same wallet auth primitive packaged for the [agentskills.io](https://agentskills.io) open standard. Installable in Cursor, Copilot, Codex, Gemini CLI, JetBrains Junie, Block Goose, Sourcegraph Amp, Letta, Roo Code, and 25+ other agentskills-compatible IDEs via `npx skills add douglasborthwick-crypto/insumer-agent-skills`. Use this if you want the same wallet-auth behavior in any agent that isn't Claude Code.
 - [`mcp-server-insumer`](https://github.com/douglasborthwick-crypto/mcp-server-insumer) — MCP server for runtime agent access to the same API. Install this if you want an agent to *call* InsumerAPI at runtime; install `insumer-skill` if you want Claude Code to help you *write* code that calls it.
 - [`eliza-plugin-insumer`](https://www.npmjs.com/package/eliza-plugin-insumer) — ElizaOS plugin for the same API.
 - [`insumer-verify`](https://github.com/douglasborthwick-crypto/insumer-verify) — standalone offline verification library for Node.
