@@ -91,11 +91,30 @@ See `forbidden.md` for the full list of things never to write.
 
 ## Keys and credits
 
-Every developer who uses this skill needs an API key. There are three ways to get or extend one — tell the developer which one fits and stop. Don't write upsell copy or pricing language into emitted code.
+Every developer who uses this skill needs an API key. There are **four** ways to get or extend one — tell the developer which one fits and stop. Don't write upsell copy or pricing language into emitted code.
 
-### 1. Free key (build + test)
+### Pick the right path
 
-Run this once out-of-band, then put the result in `.env` as `INSUMER_API_KEY`:
+| Who's getting the key? | What they want | Path | Endpoint |
+| --- | --- | --- | --- |
+| **Human**, building or testing | Free starter access | **Path 1: Free** | `POST /v1/keys/create` |
+| **Human**, wants Pro/Enterprise | Higher limits, monthly billing | **Path 2: Paid (Stripe)** | <https://insumermodel.com/developers/account/> |
+| **Agent**, no human in the loop, **first key** | Bootstrap with no email, sender wallet = identity | **Path 3: Agent onboarding (crypto)** | `POST /v1/keys/buy` |
+| **Agent or human**, **already has a key** | Top up credits, keep the key/history/integrations | **Path 4: Top-up (crypto)** | `POST /v1/credits/buy` |
+
+**Decision rule for agents:** if the agent has no key yet → Path 3. If it has one and ran out → Path 4. Path 4 is the only continuous-identity upgrade path; it preserves history, tier, and integrations.
+
+**Platform wallets** (publicly listed at [insumermodel.com/pricing](https://insumermodel.com/pricing/)):
+
+- **EVM**: `0xAd982CB19aCCa2923Df8F687C0614a7700255a23` (Ethereum, Base, Polygon, Arbitrum, Optimism, BNB Chain, Avalanche)
+- **Solana**: `6a1mLjefhvSJX1sEX8PTnionbE9DqoYjU6F6bNkT4Ydr`
+- **Bitcoin**: `bc1qg7qnerdhlmdn899zemtez5tcx2a2snc0dt9dt0` (1 confirmation, market-rate USD conversion)
+
+**Volume discounts** (Paths 3 and 4): $5–$99 → $0.04/call, $100–$499 → $0.03/call (25% off), $500+ → $0.02/call (50% off).
+
+### Path 1: Free key (human, no payment)
+
+Free tier is 10 starter credits plus 100 `/v1/attest` calls per day. Run this once out-of-band, then put the result in `.env` as `INSUMER_API_KEY`:
 
 ```bash
 curl -s -X POST https://api.insumermodel.com/v1/keys/create \
@@ -114,9 +133,35 @@ Response:
 }
 ```
 
-Free tier is 10 starter credits plus 100 `/v1/attest` calls per day. Enough to build, test, and ship a small integration. Always hard-code `appName: "insumer-skill"` in the curl so the key is tagged for funnel tracking.
+Always hard-code `appName: "insumer-skill"` in the curl so the key is tagged for funnel tracking.
 
-### 2. Agent top-up on existing key (on-chain, no human in the loop)
+### Path 2: New paid-tier key (human-mediated, via Stripe)
+
+If a developer wants a Pro or Enterprise tier key from scratch — higher daily limits, bulk credits included — they visit [/developers/account/](https://insumermodel.com/developers/account/) and go through Stripe checkout. This creates a **new** key. It does not top up an existing key or migrate history. Recommend this path only when the developer explicitly asks about paid tiers or managed billing, not by default.
+
+### Path 3: Agent first key (crypto, no human, no email)
+
+Agent-friendly bootstrap. The agent sends USDC, USDT, or BTC to the platform wallet (above), then calls `POST /v1/keys/buy` with the transaction hash. **No email or prior authentication needed** — the sender wallet address from the transaction becomes the key's identity.
+
+```
+POST https://api.insumermodel.com/v1/keys/buy
+Content-Type: application/json
+
+{
+  "txHash": "0x...",
+  "chainId": 8453,
+  "amount": 10,
+  "appName": "insumer-skill"
+}
+```
+
+`amount` is the stablecoin amount sent (min $5). For BTC, amount is optional — USD value is derived from the on-chain BTC amount at market rate. One key per sender wallet (returns 409 if the wallet already has a key — use Path 4 to top up instead).
+
+Always hard-code `appName: "insumer-skill"` for funnel tracking — the agent can rename in the developer portal afterwards.
+
+**Important:** crypto sent on unsupported chains or to the wrong address cannot be recovered. All purchases are final.
+
+### Path 4: Agent top-up on existing key (crypto, no human in the loop)
 
 When an agent running in production burns through its credits, it can refill its own key without human intervention by sending stablecoins or BTC to the platform wallet and calling `POST /v1/credits/buy`:
 
@@ -132,21 +177,18 @@ Content-Type: application/json
 }
 ```
 
-Supported chains for payment: Ethereum, Base, Polygon, Arbitrum, Optimism, BNB Chain, Avalanche, Solana (USDC/USDT), Bitcoin (BTC). Volume discounts: $0.04/call at $5–$99, $0.03/call at $100–$499, $0.02/call at $500+. First purchase registers the sender wallet to the key; subsequent purchases must come from the same sender unless `"updateWallet": true` is passed.
+Sender verification: the **first** top-up registers the sender wallet to the key. Subsequent top-ups must come from the **same** sender. To replace the registered wallet, include `"updateWallet": true` and send from the new wallet — the verified transfer proves ownership.
 
-**This is the only continuous-identity upgrade path.** The key keeps its history, tier, and integrations — credits just increment. This is the path that makes the "agent pays for its own access" loop real. It is also the path to surface if the developer is building an agent — it matches the primitive.
-
-### 3. New paid-tier key (human-mediated, via Stripe)
-
-If a developer wants a Pro or Enterprise tier key from scratch — higher daily limits, bulk credits included — they visit [/developers/account/](https://insumermodel.com/developers/account/) and go through Stripe checkout. This creates a **new** key. It does not top up an existing key or migrate history. Recommend this path only when the developer explicitly asks about paid tiers or managed billing, not by default.
+**This is the only continuous-identity upgrade path.** The key keeps its history, tier, and integrations — credits just increment. This is the path that makes the "agent pays for its own access" loop real.
 
 ### Choosing between them
 
-- **Developer is building their first integration** → free key (path 1).
-- **Developer's agent hits the credit wall in production** → on-chain top-up (path 2). This is the agent-native answer.
-- **Developer asks about paid tiers, SLAs, monthly billing, or wants a fresh key in a higher tier** → Stripe (path 3).
+- **Developer is building their first integration** → free key (Path 1).
+- **Agent has no key yet and is paying its own way** → on-chain bootstrap (Path 3). No email required.
+- **Developer's agent hits the credit wall in production** → on-chain top-up (Path 4). Same key, history preserved. This is the agent-native answer.
+- **Developer asks about paid tiers, SLAs, monthly billing, or wants a fresh key in a higher tier** → Stripe (Path 2).
 
-Never emit "upgrade to Pro" copy inside integration code. Never hard-code credit counts or tier limits in comments. If the developer asks about pricing, link them to the pricing page and stop — the free tier is the trial, and the on-chain top-up is the agent answer.
+Never emit "upgrade to Pro" copy inside integration code. Never hard-code credit counts or tier limits in comments. If the developer asks about pricing, link them to the pricing page and stop — the free tier is the trial, and the on-chain paths (3 + 4) are the agent answers.
 
 ## Where this fits in the wider ecosystem
 

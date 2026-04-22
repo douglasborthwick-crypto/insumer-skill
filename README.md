@@ -4,6 +4,8 @@
 
 > OAuth proves who the user is. Wallet auth proves what the wallet holds. Boolean, not balance.
 
+> **Not in Claude Code?** This repo is Claude-Code-specific. For Cursor, GitHub Copilot, OpenAI Codex, Gemini CLI, JetBrains Junie, Sourcegraph Amp, Block Goose, and 25+ other IDEs supporting the [agentskills.io](https://agentskills.io) open standard, use [`insumer-agent-skills`](https://github.com/douglasborthwick-crypto/insumer-agent-skills) — same wallet auth primitive, multi-agent install via `npx skills add insumer/insumer-agent-skills`.
+
 ## What this skill does
 
 When you're working in Claude Code and you ask Claude to "add wallet verification," "gate this endpoint by USDC balance," "check if a wallet holds a specific NFT," or "add a pre-transaction trust check," this skill gives Claude the canonical shapes, verification recipes, and hard-coded reference values for [InsumerAPI](https://insumermodel.com) so the code Claude emits works on the first try.
@@ -59,7 +61,20 @@ The signed boolean is counterparty-portable. Agent A can hand it to Agent B, who
 
 **Boolean, not balance**: standard mode returns only the pass/fail result. The wallet's actual holdings never leave the verification layer. Merkle mode is available for callers who need the raw balance for client-side proof reconstruction — it costs double and is opt-in.
 
-**Agents pay for their own access**: when an agent burns through its free credits in production, it refills its own key on-chain via `POST /v1/credits/buy` (USDC, USDT, or BTC) — no Stripe, no human approval, no subscription renewal. The key keeps its identity, history, and integrations; credits just increment. This is the only continuous-identity upgrade path and the one that makes the "agent pays for its own access" loop real.
+**Agents pay for their own access**: there are two crypto-native paths, both no-human-in-the-loop.
+
+- **Cold start** (no key yet): the agent sends USDC, USDT, or BTC to the platform wallet and calls `POST /v1/keys/buy` with the transaction hash. **No email needed** — the sender wallet from the transaction becomes the key's identity. One key per sender wallet.
+- **Top-up** (existing key, low credits): the agent sends crypto and calls `POST /v1/credits/buy` with the transaction hash. The key keeps its identity, history, and integrations; credits just increment. Sender must match the wallet registered to the key.
+
+Platform wallets (publicly listed at [insumermodel.com/pricing](https://insumermodel.com/pricing/)):
+
+- **EVM**: `0xAd982CB19aCCa2923Df8F687C0614a7700255a23` (any major EVM chain — Ethereum, Base, Polygon, Arbitrum, Optimism, BNB Chain, Avalanche)
+- **Solana**: `6a1mLjefhvSJX1sEX8PTnionbE9DqoYjU6F6bNkT4Ydr`
+- **Bitcoin**: `bc1qg7qnerdhlmdn899zemtez5tcx2a2snc0dt9dt0` (1 confirmation, market-rate USD conversion)
+
+Volume discounts: $5–$99 → $0.04/call, $100–$499 → $0.03/call (25% off), $500+ → $0.02/call (50% off).
+
+The top-up path is the only continuous-identity upgrade — same key, history preserved. No Stripe, no human approval, no subscription renewal. This is what makes the "agent pays for its own access" loop real.
 
 ## Endpoints (the two the skill uses)
 
@@ -105,6 +120,7 @@ The 403 response includes `attestationId`, `blockNumber`, and `blockTimestamp` �
 
 ## Related tools
 
+- [`insumer-agent-skills`](https://github.com/douglasborthwick-crypto/insumer-agent-skills) — same wallet auth primitive packaged for the [agentskills.io](https://agentskills.io) open standard. Installable in Cursor, Copilot, Codex, Gemini CLI, JetBrains Junie, Block Goose, Sourcegraph Amp, Letta, Roo Code, and 25+ other agentskills-compatible IDEs via `npx skills add insumer/insumer-agent-skills`. Use this if you want the same wallet-auth behavior in any agent that isn't Claude Code.
 - [`mcp-server-insumer`](https://github.com/douglasborthwick-crypto/mcp-server-insumer) — MCP server for runtime agent access to the same API. Install this if you want an agent to *call* InsumerAPI at runtime; install `insumer-skill` if you want Claude Code to help you *write* code that calls it.
 - [`eliza-plugin-insumer`](https://www.npmjs.com/package/eliza-plugin-insumer) — ElizaOS plugin for the same API.
 - [`insumer-verify`](https://github.com/douglasborthwick-crypto/insumer-verify) — standalone offline verification library for Node.
