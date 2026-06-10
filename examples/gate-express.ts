@@ -28,7 +28,7 @@ const INSUMER_ISSUER = "https://api.insumermodel.com";
 // USDC on Base — canonical contract, 6 decimals.
 const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const BASE_CHAIN_ID = 8453;
-const MIN_USDC = 100;
+const MIN_USDC = "100"; // decimal string — v2 keys require the token_balance threshold as a string
 
 // Cache the JWKS across requests. createRemoteJWKSet handles TTL + rotation.
 const jwks = createRemoteJWKSet(INSUMER_JWKS_URL);

@@ -23,7 +23,7 @@ X-API-Key: insr_live_...
       "type": "token_balance",
       "contractAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
       "chainId": 8453,
-      "threshold": 100,
+      "threshold": "100",
       "decimals": 6,
       "label": "USDC on Base >= 100"
     }
@@ -59,11 +59,12 @@ X-API-Key: insr_live_...
   "type": "token_balance",
   "contractAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
   "chainId": 8453,
-  "threshold": 100,
+  "threshold": "100",
   "decimals": 6,
   "label": "USDC on Base >= 100"
 }
 ```
+- `threshold` is a **decimal string** in token/display units (e.g. `"100"`, not `100`). Keys created from 2026-06-10 sign with `kid: insumer-attest-v2`, which requires the string form to preserve full precision and rejects a JSON number with a `400`. (Older `insumer-attest-v1` keys accept either; a string is safe on both.)
 - `decimals` defaults to `18`. Always set it explicitly for USDC / USDT / USDC.e (they're 6).
 - For native tokens (ETH, SOL, XRP, BTC), set `contractAddress: "native"`.
 - For XRPL trust line tokens, add `currency: "RLUSD"` (or similar currency code).
