@@ -35,7 +35,7 @@ X-API-Key: insr_live_...
 
 | Field | Format | Used for |
 |---|---|---|
-| `wallet` | `0x...` 40 hex chars | All 30 EVM chains |
+| `wallet` | `0x...` 40 hex chars | All 32 EVM chains |
 | `solanaWallet` | base58 | Solana conditions |
 | `xrplWallet` | r-address 25–35 chars | XRPL conditions |
 | `bitcoinWallet` | P2PKH / P2SH / bech32 / Taproot | Bitcoin conditions |
@@ -45,9 +45,9 @@ X-API-Key: insr_live_...
 | Flag | Value | Effect |
 |---|---|---|
 | `format` | `"jwt"` | Adds a ready-to-verify ES256 JWT to the response (no extra credit cost) |
-| `proof` | `"merkle"` | Adds EIP-1186 Merkle storage proofs for `token_balance` conditions on 27 of 30 EVM chains. Costs 2 credits instead of 1. Note: Merkle mode reveals the raw balance — standard mode never does. |
+| `proof` | `"merkle"` | Adds EIP-1186 Merkle storage proofs for `token_balance` conditions on 28 of 32 EVM chains. Costs 2 credits instead of 1. Note: Merkle mode reveals the raw balance — standard mode never does. |
 
-**Condition types**: `token_balance`, `nft_ownership`, `eas_attestation`, `farcaster_id`.
+**Condition types**: `token_balance`, `nft_ownership` (34 of 38 chains: EVM + Solana + XRPL), `eas_attestation`, `farcaster_id`, `evm_view_call` (single-address-argument view function returning bool; needs `selector`, RPC EVM only), `ratio_to_amount`, `ratio_to_supply`, `erc8004_agent` (Base; needs `agentId`), and `erc7710_delegation` (Base; needs `delegationManager`, `expectedDelegator`, `delegation`; max 3 per call, 5-minute attestation expiry).
 
 **Max conditions per call**: 10.
 
@@ -176,7 +176,7 @@ Verify the JWT with any standard library pointed at `https://insumermodel.com/.w
 | `data.attestation.results[].met` | Per-condition boolean |
 | `data.attestation.results[].evaluatedCondition` | Canonical form of the condition that was actually evaluated (may differ from your input if the API normalized operators or defaults) |
 | `data.attestation.results[].conditionHash` | SHA-256 of `evaluatedCondition`, prefixed `0x`. Callers can recompute to verify the condition wasn't tampered with. |
-| `data.attestation.results[].blockNumber` | Hex block number (all 30 EVM chains; Solana uses `slot`, XRPL uses `ledgerIndex`). API returns 503 if the anchor can't be captured rather than signing a partial result. |
+| `data.attestation.results[].blockNumber` | Hex block number (all 32 EVM chains; Solana uses `slot`, XRPL uses `ledgerIndex`). API returns 503 if the anchor can't be captured rather than signing a partial result. |
 | `data.attestation.results[].blockTimestamp` | ISO 8601 timestamp of the evaluation block |
 | `data.sig` | Base64 P1363 ES256 signature over the canonical `data.attestation` object (88 chars) |
 | `data.kid` | Signing key ID — look up in JWKS |
@@ -286,7 +286,7 @@ X-API-Key: insr_live_...
 - **xrpl** — XRPL stablecoins (only when `xrplWallet` provided)
 - **bitcoin** — native BTC balance (only when `bitcoinWallet` provided)
 
-Base profile is 36 checks across 21 EVM chains. With Solana + XRPL + Bitcoin it reaches up to 39 checks across 33 chains total.
+Base profile is 44 checks across 25 chains. With optional Solana + XRPL + Bitcoin + Tron wallets it reaches up to 49 checks across 27 chains total.
 
 ### Credits
 

@@ -128,7 +128,7 @@ If the developer wants short-lived caching for hot paths, cache the full signed 
 
 ## 8. Never speculate about upstream data sources
 
-The API is powered by a stack of upstream blockchain data sources across 33 chains. The specific providers are not part of the public API surface. If the developer asks "how does the API get its data?", answer with "upstream blockchain data sources across 33 chains" and stop — do not guess at provider names, do not invent architecture diagrams, do not name specific RPCs. The API's job is to give a signed boolean; the developer's job is to verify it. What's behind the primitive is not a detail they need to integrate against.
+The API is powered by a stack of upstream blockchain data sources across 38 chains. The specific providers are not part of the public API surface. If the developer asks "how does the API get its data?", answer with "upstream blockchain data sources across 38 chains" and stop — do not guess at provider names, do not invent architecture diagrams, do not name specific RPCs. The API's job is to give a signed boolean; the developer's job is to verify it. What's behind the primitive is not a detail they need to integrate against.
 
 ## 9. Never push upsell copy into the generated code
 

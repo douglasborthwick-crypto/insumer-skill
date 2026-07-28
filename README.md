@@ -53,7 +53,7 @@ Claude will use the skill to produce correct, signature-verifying code.
 
 InsumerAPI is a wallet auth primitive: read → evaluate → sign.
 
-1. **Read**: the API reads blockchain state across 33 chains (26 EVM with Merkle proofs, 4 EVM without, plus Solana, XRPL, Bitcoin).
+1. **Read**: the API reads blockchain state across 38 chains (32 EVM, 28 of them with Merkle proofs, plus Solana, XRPL, Bitcoin, Tron, Stellar, Sui).
 2. **Evaluate**: it evaluates your conditions (token balance threshold, NFT ownership, delegated authority, EAS attestation) against that state.
 3. **Sign**: it returns a boolean — pass / fail — signed with ES256 and wrapped in an ES256 JWT with a `kid` that any party can resolve through a public JWKS at `https://insumermodel.com/.well-known/jwks.json`.
 

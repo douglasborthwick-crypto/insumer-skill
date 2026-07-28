@@ -1,6 +1,6 @@
 ---
 name: insumer
-description: Add wallet auth to a project — condition-based access across 33 chains,
+description: Add wallet auth to a project — condition-based access across 38 chains,
   signed booleans, JWKS-verifiable offline. Use when the user wants to gate a feature
   by token holdings, verify wallet eligibility, add on-chain trust checks, add token
   gating, check delegated authority or EAS attestations, or compose a `wallet_state`
@@ -31,7 +31,7 @@ Add **wallet auth** to a project — the same way you'd add OAuth, but for what 
 
 - **Category**: condition-based access. Send a wallet and a condition (token balance, NFT ownership, delegated authority, on-chain attestation), get back a cryptographically signed yes or no.
 - **Primitive**: read → evaluate → sign. The API reads blockchain state, evaluates the condition, and signs the result with ES256 (ECDSA P-256). The signed boolean is portable — any downstream service can verify it against the public JWKS without calling the API back.
-- **Coverage**: 33 chains. 26 EVM chains with optional Merkle storage proofs, 4 more EVM without, plus Solana, XRPL, and Bitcoin.
+- **Coverage**: 38 chains. 32 EVM chains (28 with optional Merkle storage proofs), plus Solana, XRPL, Bitcoin, Tron, Stellar, and Sui. NFT ownership on 34 of the 38 (EVM + Solana + XRPL); Bitcoin, Tron, Stellar and Sui are token-balance only.
 - **What you return to the caller**: the signed boolean — never the raw balance. Standard mode is boolean-not-balance by construction; Merkle mode is opt-in and costs double because it reveals the balance.
 
 ## When to reach for this skill
