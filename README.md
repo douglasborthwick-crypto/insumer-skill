@@ -127,7 +127,7 @@ The 403 response includes `attestationId`, `blockNumber`, and `blockTimestamp` â
 
 ## See also
 
-For multi-issuer trust envelope builders: this skill ships the `wallet_state` category of the trust-evidence-format as defined in [agent-governance-vocabulary](https://github.com/aeoess/agent-governance-vocabulary). For the full multi-issuer envelope pattern (9 issuers, 10 dimensions, JWKS-verifiable offline), see [insumer-examples #1](https://github.com/douglasborthwick-crypto/insumer-examples/issues/1).
+For multi-issuer trust envelope builders: this skill ships the `wallet_state` category of the trust-evidence-format as defined in [agent-governance-vocabulary](https://github.com/aeoess/agent-governance-vocabulary). For the full multi-issuer envelope pattern (10 issuers, 12 dimensions, JWKS-verifiable offline), see [insumer-examples #1](https://github.com/douglasborthwick-crypto/insumer-examples/issues/1).
 
 ## License
 
