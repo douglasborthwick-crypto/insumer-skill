@@ -100,7 +100,13 @@ X-API-Key: insr_live_...
 }
 ```
 
-### Response (live, 2026-04-13)
+### Response (live capture, 2026-04-13 — a v1 key)
+
+This is a real recorded response, kept because the `sig`, `jwt` and `conditionHash` in it are
+genuine bytes. It predates the 2026-06-10 cutover, so it shows the **v1** shape. On any key created
+since then the same call returns `kid: "insumer-attest-v2"`, the `evaluatedCondition.threshold` as a
+canonical decimal string, and **no `decimals` field**. The hashing and signing algorithms are
+unchanged; the preimage differs.
 
 ```json
 {
@@ -163,7 +169,7 @@ Custom claims:
 - `blockTimestamp`: ISO 8601 timestamp of that block
 - `results`: full per-condition results array (same shape as the top-level `data.attestation.results`)
 
-Header: `{"alg":"ES256","typ":"JWT","kid":"insumer-attest-v1"}`.
+Header: `{"alg":"ES256","typ":"JWT","kid":"<the signing key ID>"}` — `insumer-attest-v2` on a key issued today, `insumer-attest-v1` on a pre-cutover key (as in the captured example above). Read the `kid` from the header rather than assuming it.
 
 Verify the JWT with any standard library pointed at `https://insumermodel.com/.well-known/jwks.json`.
 
@@ -265,7 +271,7 @@ X-API-Key: insr_live_...
       "expiresAt": "2026-04-13T12:30:00.000Z"
     },
     "sig": "base64 P1363 signature over trust object",
-    "kid": "insumer-attest-v1"
+    "kid": "insumer-trust-v2"
   },
   "meta": {
     "creditsRemaining": 97,
@@ -299,7 +305,11 @@ Base profile is 44 checks across 25 chains. With optional Solana + XRPL + Bitcoi
 
 Fetch the public key once and cache it. Every library that supports ES256 / P-256 JWTs understands the JWKS at <https://insumermodel.com/.well-known/jwks.json>.
 
-The JWKS contains an array of keys. Match on `kid` (currently `insumer-attest-v1`).
+The JWKS contains an array of keys. **Match on the `kid` from the response you are verifying.** It
+publishes three IDs over the same P-256 key: `insumer-attest-v2` (attest), `insumer-trust-v2`
+(trust), `insumer-attest-v1` (pre-cutover keys, and the commerce discount path). Do not pin one and
+do not take `keys[0]` — that appears to work only because the three currently share a key, and it
+fails at the first rotation. Fail closed when a `kid` does not resolve.
 
 See `../examples/gate-express.ts` for a live-verified Node/TypeScript example using `jose`'s `createRemoteJWKSet`.
 

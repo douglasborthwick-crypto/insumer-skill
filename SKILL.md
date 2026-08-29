@@ -70,7 +70,7 @@ Do not hallucinate these. They are stable and part of the canonical spec.
 - **API base URL**: `https://api.insumermodel.com` (never use Cloud Functions URLs)
 - **JWKS URL**: `https://insumermodel.com/.well-known/jwks.json`
 - **Signing algorithm**: ES256 (ECDSA P-256)
-- **Primary kid**: `insumer-attest-v1`
+- **Key IDs (`kid`)**: the JWKS publishes three over the same P-256 key — `insumer-attest-v2` (attest, every key issued since 2026-06-10), `insumer-trust-v2` (trust), `insumer-attest-v1` (keys created before the cutover, and the commerce discount path for all callers). **Resolve the key by the `kid` on the response. Never pin one, and never index into the key set.** The `kid` also selects the verification rules: v1 signs bare JSON, v2 signs a domain-separated canonical preimage.
 - **Attestation TTL**: 30 minutes (`expiresAt` in response)
 - **Signature format**: base64 P1363 (88 chars) on the `sig` field; ES256 JWT on the `jwt` field when `format: "jwt"` is requested
 - **Free key endpoint**: `POST https://api.insumermodel.com/v1/keys/create`
@@ -82,11 +82,12 @@ When you write code that uses this API, you MUST:
 
 1. **Put the key in an environment variable.** Never inline `insr_live_...` in source code. Use `process.env.INSUMER_API_KEY` / `os.environ["INSUMER_API_KEY"]` / the language equivalent.
 2. **Verify the signature offline.** Either use the `jwt` field with a standard JWT library (`jose`, `PyJWT`, `go-jose`) pointed at the JWKS URL, or verify the raw `sig` field against the `trust` / `attestation` object with ES256. Never trust the JSON alone — the signature is the whole point.
-3. **Cache the JWKS, not the verdict.** Libraries like `jose`'s `createRemoteJWKSet` handle caching correctly. Do not cache `pass` — it expires in 30 minutes and wallet state changes.
-4. **Hard-code `decimals: 6` for USDC / USDT / USDC.e.** The API defaults to 18. Getting this wrong makes the threshold check silently fail.
-5. **Send the `token_balance` `threshold` as a decimal string** (`"100"`, not `100`). Keys created from 2026-06-10 sign with `kid: insumer-attest-v2` and reject a JSON number with a `400`; a string works on both v1 and v2 keys.
-6. **Call from a backend, not a browser.** The API key is long-lived; exposing it in client JS is the same class of mistake as exposing a database password.
-7. **Emit the free-key flow as a one-liner comment + curl**, not as runtime code. Developers run it once out-of-band.
+3. **Resolve the signing key by the `kid` on the response.** Never hard-code a key ID and never take `keys[0]` — three IDs share one key today, so indexing appears to work and breaks silently at the first rotation. `jose`'s `createRemoteJWKSet` does this correctly; a hand-rolled verifier must match on `kid` and fail closed when it does not resolve.
+4. **Cache the JWKS, not the verdict.** Libraries like `jose`'s `createRemoteJWKSet` handle caching correctly. Do not cache `pass` — it expires in 30 minutes and wallet state changes.
+5. **Hard-code `decimals: 6` for USDC / USDT / USDC.e.** The API defaults to 18. Getting this wrong makes the threshold check silently fail.
+6. **Send the `token_balance` `threshold` as a decimal string** (`"100"`, not `100`). Keys created from 2026-06-10 sign with `kid: insumer-attest-v2` and reject a JSON number with a `400`; a string works on both v1 and v2 keys.
+7. **Call from a backend, not a browser.** The API key is long-lived; exposing it in client JS is the same class of mistake as exposing a database password.
+8. **Emit the free-key flow as a one-liner comment + curl**, not as runtime code. Developers run it once out-of-band.
 
 See `forbidden.md` for the full list of things never to write.
 
@@ -193,7 +194,7 @@ Never emit "upgrade to Pro" copy inside integration code. Never hard-code credit
 
 ## Where this fits in the wider ecosystem
 
-In the `agent-governance-vocabulary` trust-evidence-format (the cross-issuer trust envelope spec used by the A2A / APS / Revettr / AgentGraph / SAR / AgentID / ThoughtProof / Maiat community), this is the `wallet_state` category — InsumerAPI is the reference issuer for row 1. Signed shapes: `attest_jwt`, kid `insumer-attest-v1`, ES256, JWKS-verifiable offline. If the user is composing a multi-issuer trust envelope alongside those issuers, this is the signal type they're adding.
+In the `agent-governance-vocabulary` trust-evidence-format (the cross-issuer trust envelope spec used by the A2A / APS / Revettr / AgentGraph / SAR / AgentID / ThoughtProof / Maiat community), this is the `wallet_state` category — InsumerAPI is the reference issuer for row 1. Signed shapes: `attest_jwt`, ES256, JWKS-verifiable offline, kid resolved from the response (`insumer-attest-v2` on any key issued today). If the user is composing a multi-issuer trust envelope alongside those issuers, this is the signal type they're adding.
 
 For most developers this footnote is irrelevant — they just want wallet auth. But if they mention `wallet_state`, `trust envelope`, `multi-attestation`, or any of the issuer names above, surface the link to [insumer-examples #1](https://github.com/douglasborthwick-crypto/insumer-examples/issues/1) for the reference envelope implementation.
 
