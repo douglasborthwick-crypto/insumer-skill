@@ -108,7 +108,7 @@ Every developer who uses this skill needs an API key. There are **four** ways to
 
 **Platform wallets** (publicly listed at [insumermodel.com/pricing](https://insumermodel.com/pricing/)):
 
-- **EVM**: `0xAd982CB19aCCa2923Df8F687C0614a7700255a23` (Ethereum, Base, Polygon, Arbitrum, Optimism, BNB Chain, Avalanche)
+- **EVM**: `0xAd982CB19aCCa2923Df8F687C0614a7700255a23` (these seven EVM chains only: Ethereum, Base, Polygon, Arbitrum, Optimism, BNB Chain, Avalanche)
 - **Solana**: `6a1mLjefhvSJX1sEX8PTnionbE9DqoYjU6F6bNkT4Ydr`
 - **Bitcoin**: `bc1qg7qnerdhlmdn899zemtez5tcx2a2snc0dt9dt0` (1 confirmation, market-rate USD conversion)
 
