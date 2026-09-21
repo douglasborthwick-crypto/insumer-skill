@@ -79,7 +79,7 @@ The top-up path is the only continuous-identity upgrade — same key, history pr
 ## Endpoints (the two the skill uses)
 
 - `POST /v1/attest` — 1–10 custom conditions, per-condition booleans, one overall `pass`. 1 credit.
-- `POST /v1/trust`: curated profile of 44 base checks across 25 chains in 5 dimensions (stablecoins, governance, NFTs, staking, institutional stablecoins), up to 49 checks across 27 chains in 9 dimensions with the optional wallets. 3 credits.
+- `POST /v1/trust`: curated profile of 45 base checks across 26 chains in 5 dimensions (stablecoins, governance, NFTs, staking, institutional stablecoins), up to 50 checks across 28 chains in 9 dimensions with the optional wallets. 3 credits.
 
 Full shapes in `reference/endpoints.md`.
 

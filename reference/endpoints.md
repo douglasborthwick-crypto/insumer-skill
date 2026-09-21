@@ -218,7 +218,7 @@ All errors follow the `ErrorEnvelope` shape:
 
 ## `POST /v1/trust`
 
-Curated wallet trust profile: 44 base checks across 25 chains in 5 dimensions, up to 49 checks across 27 chains in 9 dimensions with the optional wallets. Returns a signed profile with per-check booleans and an overall summary.
+Curated wallet trust profile: 45 base checks across 26 chains in 5 dimensions, up to 50 checks across 28 chains in 9 dimensions with the optional wallets. Returns a signed profile with per-check booleans and an overall summary.
 
 ### Request
 
@@ -258,8 +258,8 @@ X-API-Key: insr_live_...
         "stablecoins": {
           "checks": [ { "label": "...", "met": true, "chainId": 1, "..." } ],
           "passCount": 3,
-          "failCount": 23,
-          "total": 26
+          "failCount": 24,
+          "total": 27
         },
         "governance": { "checks": [ ... ], "passCount": 0, "failCount": 4, "total": 4 },
         "nfts":       { "checks": [ ... ], "passCount": 0, "failCount": 3, "total": 3 },
@@ -269,9 +269,9 @@ X-API-Key: insr_live_...
         "xrpl":       { "checks": [ ... ], "...": "only present when xrplWallet provided" }
       },
       "summary": {
-        "totalChecks": 44,
+        "totalChecks": 45,
         "totalPassed": 3,
-        "totalFailed": 35,
+        "totalFailed": 36,
         "totalNotEvaluated": 6,
         "dimensionsWithActivity": 1,
         "dimensionsChecked": 5
@@ -293,7 +293,7 @@ X-API-Key: insr_live_...
 
 ### Dimensions
 
-- **stablecoins**: USDC and USDT across EVM chains (26 checks)
+- **stablecoins**: USDC and USDT across EVM chains (27 checks)
 - **governance** — governance token holdings (UNI, AAVE, COMP, etc.)
 - **nfts** — blue-chip NFT collections
 - **staking** — staking / LP positions
@@ -303,7 +303,7 @@ X-API-Key: insr_live_...
 - **bitcoin** — native BTC balance (only when `bitcoinWallet` provided)
 - **tron**: Tron USDT (only when `tronWallet` provided)
 
-Base profile is 44 checks across 25 chains in 5 dimensions. With optional Solana + XRPL + Bitcoin + Tron wallets it reaches up to 49 checks across 27 chains in 9 dimensions.
+Base profile is 45 checks across 26 chains in 5 dimensions. With optional Solana + XRPL + Bitcoin + Tron wallets it reaches up to 50 checks across 28 chains in 9 dimensions.
 
 ### Credits
 
