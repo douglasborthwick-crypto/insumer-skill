@@ -294,9 +294,9 @@ X-API-Key: insr_live_...
 ### Dimensions
 
 - **stablecoins**: USDC and USDT across EVM chains (27 checks)
-- **governance** — governance token holdings (UNI, AAVE, COMP, etc.)
-- **nfts** — blue-chip NFT collections
-- **staking** — staking / LP positions
+- **governance**: UNI and AAVE on Ethereum, ARB on Arbitrum, OP on Optimism (4 checks)
+- **nfts**: BAYC, Pudgy Penguins and Wrapped CryptoPunks on Ethereum (3 checks)
+- **staking**: stETH, rETH and cbETH on Ethereum (3 checks)
 - **institutional_stablecoins**: EURCV, USDCV, USDC and BENJI across Ethereum, Solana, XRPL, Stellar and Sui (8 checks, always present; the Solana, XRPL, Stellar and Sui entries carry `evaluated: false` unless the matching wallet is supplied)
 - **solana** — Solana USDC (only when `solanaWallet` provided)
 - **xrpl** — XRPL stablecoins (only when `xrplWallet` provided)
