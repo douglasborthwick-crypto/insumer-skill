@@ -15,7 +15,7 @@ Concretely, the skill contains:
 - `SKILL.md` — the instructions Claude reads when the skill activates
 - `reference/endpoints.md` — full request/response shapes for `/v1/attest` and `/v1/trust`, verified against a live call
 - `examples/gate-express.ts` — Express middleware that gates an endpoint by USDC balance on Base, with offline JWKS verification via `jose`
-- `forbidden.md` — hard stops (things the skill must never emit: inline API keys, unverified responses, raw balance leaks, wrong decimals, Cloud Functions URLs)
+- `forbidden.md`: hard stops (things the skill must never emit: inline API keys, unverified responses, raw balance leaks, a guessed `decimals` value, Cloud Functions URLs)
 
 ## Install
 
@@ -53,7 +53,7 @@ Claude will use the skill to produce correct, signature-verifying code.
 
 InsumerAPI is a wallet auth primitive: read → evaluate → sign.
 
-1. **Read**: the API reads blockchain state across 38 chains (32 EVM, 28 of them with Merkle proofs, plus Solana, XRPL, Bitcoin, Tron, Stellar, Sui).
+1. **Read**: the API reads blockchain state across 37 chains (31 EVM, 27 of them with Merkle proofs, plus Solana, XRPL, Bitcoin, Tron, Stellar, Sui).
 2. **Evaluate**: it evaluates your conditions (token balance threshold, NFT ownership, delegated authority, EAS attestation) against that state.
 3. **Sign**: it returns a boolean — pass / fail — signed with ES256 and wrapped in an ES256 JWT with a `kid` that any party can resolve through a public JWKS at `https://insumermodel.com/.well-known/jwks.json`.
 
@@ -79,7 +79,7 @@ The top-up path is the only continuous-identity upgrade — same key, history pr
 ## Endpoints (the two the skill uses)
 
 - `POST /v1/attest` — 1–10 custom conditions, per-condition booleans, one overall `pass`. 1 credit.
-- `POST /v1/trust` — curated 36-check profile across 4 dimensions (stablecoins, governance, NFTs, staking), up to 39 checks with Solana/XRPL/Bitcoin. 3 credits.
+- `POST /v1/trust`: curated profile of 44 base checks across 25 chains in 5 dimensions (stablecoins, governance, NFTs, staking, institutional stablecoins), up to 49 checks across 27 chains in 9 dimensions with the optional wallets. 3 credits.
 
 Full shapes in `reference/endpoints.md`.
 

@@ -1,6 +1,6 @@
 ---
 name: insumer
-description: Add wallet auth to a project — condition-based access across 38 chains,
+description: Add wallet auth to a project, condition-based access across 37 chains,
   signed booleans, JWKS-verifiable offline. Use when the user wants to gate a feature
   by token holdings, verify wallet eligibility, add on-chain trust checks, add token
   gating, check delegated authority or EAS attestations, or compose a `wallet_state`
@@ -25,13 +25,13 @@ Add **wallet auth** to a project — the same way you'd add OAuth, but for what 
 
 3. Write the integration code using `reference/endpoints.md` for exact shapes and `examples/gate-express.ts` as the reference pattern. Always include offline JWKS verification — never trust the JSON body alone.
 
-4. Verify the output against `forbidden.md` before handing it back. If it violates any hard-stop pattern (inline keys, unverified responses, raw balance leaks, wrong USDC decimals, browser calls), fix it before replying.
+4. Verify the output against `forbidden.md` before handing it back. If it violates any hard-stop pattern (inline keys, unverified responses, raw balance leaks, a guessed `decimals` value, browser calls), fix it before replying.
 
 ## What this primitive is
 
 - **Category**: condition-based access. Send a wallet and a condition (token balance, NFT ownership, delegated authority, on-chain attestation), get back a cryptographically signed yes or no.
 - **Primitive**: read → evaluate → sign. The API reads blockchain state, evaluates the condition, and signs the result with ES256 (ECDSA P-256). The signed boolean is portable — any downstream service can verify it against the public JWKS without calling the API back.
-- **Coverage**: 38 chains. 32 EVM chains (28 with optional Merkle storage proofs), plus Solana, XRPL, Bitcoin, Tron, Stellar, and Sui. NFT ownership on 34 of the 38 (EVM + Solana + XRPL); Bitcoin, Tron, Stellar and Sui are token-balance only.
+- **Coverage**: 37 chains. 31 EVM chains (27 with optional Merkle storage proofs), plus Solana, XRPL, Bitcoin, Tron, Stellar, and Sui. NFT ownership on 33 of the 37 (EVM + Solana + XRPL); Bitcoin, Tron, Stellar and Sui are token-balance only.
 - **What you return to the caller**: the signed boolean — never the raw balance. Standard mode is boolean-not-balance by construction; Merkle mode is opt-in and costs double because it reveals the balance.
 
 ## When to reach for this skill
@@ -84,7 +84,7 @@ When you write code that uses this API, you MUST:
 2. **Verify the signature offline.** Either use the `jwt` field with a standard JWT library (`jose`, `PyJWT`, `go-jose`) pointed at the JWKS URL, or verify the raw `sig` field against the `trust` / `attestation` object with ES256. Never trust the JSON alone — the signature is the whole point.
 3. **Resolve the signing key by the `kid` on the response.** Never hard-code a key ID and never take `keys[0]` — three IDs share one key today, so indexing appears to work and breaks silently at the first rotation. `jose`'s `createRemoteJWKSet` does this correctly; a hand-rolled verifier must match on `kid` and fail closed when it does not resolve.
 4. **Cache the JWKS, not the verdict.** Libraries like `jose`'s `createRemoteJWKSet` handle caching correctly. Do not cache `pass` — it expires in 30 minutes and wallet state changes.
-5. **Hard-code `decimals: 6` for USDC / USDT / USDC.e.** The API defaults to 18. Getting this wrong makes the threshold check silently fail.
+5. **Do not send `decimals`.** It is optional. Leave it out: the token's own decimals are always read from the chain. If sent it is only a cross-check, and a value that differs from the token's own decimals is rejected with a `400`.
 6. **Send the `token_balance` `threshold` as a decimal string** (`"100"`, not `100`). Keys created from 2026-06-10 sign with `kid: insumer-attest-v2` and reject a JSON number with a `400`; a string works on both v1 and v2 keys.
 7. **Call from a backend, not a browser.** The API key is long-lived; exposing it in client JS is the same class of mistake as exposing a database password.
 8. **Emit the free-key flow as a one-liner comment + curl**, not as runtime code. Developers run it once out-of-band.

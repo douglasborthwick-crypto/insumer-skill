@@ -25,7 +25,7 @@ const INSUMER_API = "https://api.insumermodel.com";
 const INSUMER_JWKS_URL = new URL("https://insumermodel.com/.well-known/jwks.json");
 const INSUMER_ISSUER = "https://api.insumermodel.com";
 
-// USDC on Base — canonical contract, 6 decimals.
+// USDC on Base, canonical contract. The API reads the token's decimals from the chain.
 const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const BASE_CHAIN_ID = 8453;
 const MIN_USDC = "100"; // decimal string — v2 keys require the token_balance threshold as a string
@@ -89,7 +89,6 @@ async function attestUsdcOnBase(wallet: string): Promise<AttestClaims> {
           contractAddress: USDC_BASE,
           chainId: BASE_CHAIN_ID,
           threshold: MIN_USDC,
-          decimals: 6, // USDC is 6, not the default 18
           label: `USDC on Base >= ${MIN_USDC}`,
         },
       ],

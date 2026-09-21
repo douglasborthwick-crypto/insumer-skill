@@ -24,7 +24,6 @@ X-API-Key: insr_live_...
       "contractAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
       "chainId": 8453,
       "threshold": "100",
-      "decimals": 6,
       "label": "USDC on Base >= 100"
     }
   ]
@@ -35,19 +34,22 @@ X-API-Key: insr_live_...
 
 | Field | Format | Used for |
 |---|---|---|
-| `wallet` | `0x...` 40 hex chars | All 32 EVM chains |
+| `wallet` | `0x...` 40 hex chars | All 31 EVM chains |
 | `solanaWallet` | base58 | Solana conditions |
 | `xrplWallet` | r-address 25–35 chars | XRPL conditions |
 | `bitcoinWallet` | P2PKH / P2SH / bech32 / Taproot | Bitcoin conditions |
+| `tronWallet` | T-address, base58, 34 chars | Tron conditions |
+| `stellarWallet` | G-address, 56 chars | Stellar conditions |
+| `suiWallet` | `0x` + 64 hex chars | Sui conditions |
 
 **Optional flags**:
 
 | Flag | Value | Effect |
 |---|---|---|
 | `format` | `"jwt"` | Adds a ready-to-verify ES256 JWT to the response (no extra credit cost) |
-| `proof` | `"merkle"` | Adds EIP-1186 Merkle storage proofs for `token_balance` conditions on 28 of 32 EVM chains. Costs 2 credits instead of 1. Note: Merkle mode reveals the raw balance — standard mode never does. |
+| `proof` | `"merkle"` | Adds EIP-1186 Merkle storage proofs for `token_balance` conditions on 27 of 31 EVM chains. Not available on ZKsync Era (324), Sei (1329), Viction (88) or XDC Network (50), nor on any non-EVM chain. Costs 2 credits instead of 1. Note: Merkle mode reveals the raw balance, standard mode never does. |
 
-**Condition types**: `token_balance`, `nft_ownership` (34 of 38 chains: EVM + Solana + XRPL), `eas_attestation`, `farcaster_id`, `evm_view_call` (single-address-argument view function returning bool; needs `selector`, RPC EVM only), `ratio_to_amount`, `ratio_to_supply`, `erc8004_agent` (Base; needs `agentId`), and `erc7710_delegation` (Base; needs `delegationManager`, `expectedDelegator`, `delegation`; max 3 per call, 5-minute attestation expiry).
+**Condition types**: `token_balance`, `nft_ownership` (33 of 37 chains: EVM + Solana + XRPL), `eas_attestation` (Ethereum, Optimism, Polygon, Base, Arbitrum), `farcaster_id`, `evm_view_call` (single-address-argument view function returning bool; needs `selector`, EVM chains only), `ratio_to_amount`, `ratio_to_supply`, `erc8004_agent` (Base; needs `agentId`), and `erc7710_delegation` (Base; needs `delegationManager`, `expectedDelegator`, `delegation`; max 3 per call, 5-minute attestation expiry).
 
 **Max conditions per call**: 10.
 
@@ -60,13 +62,13 @@ X-API-Key: insr_live_...
   "contractAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
   "chainId": 8453,
   "threshold": "100",
-  "decimals": 6,
   "label": "USDC on Base >= 100"
 }
 ```
 - `threshold` is a **decimal string** in token/display units (e.g. `"100"`, not `100`). Keys created from 2026-06-10 sign with `kid: insumer-attest-v2`, which requires the string form to preserve full precision and rejects a JSON number with a `400`. (Older `insumer-attest-v1` keys accept either; a string is safe on both.)
-- `decimals` defaults to `18`. Always set it explicitly for USDC / USDT / USDC.e (they're 6).
-- For native tokens (ETH, SOL, XRP, BTC), set `contractAddress: "native"`.
+- `decimals` is optional. Leave it out: the token's own decimals are always read from the chain. If sent it is only a cross-check, and a value that differs from the token's own decimals is rejected with a `400`.
+- For native tokens (ETH, SOL, XRP, BTC, TRX, XLM), set `contractAddress: "native"`. `"native"` is for `token_balance` and `ratio_to_amount` only.
+- On Sui, `contractAddress` is always a coin type (`address::module::Name`). Native SUI is `"0x2::sui::SUI"`; the string `"native"` is a `400` there.
 - For XRPL trust line tokens, add `currency: "RLUSD"` (or similar currency code).
 
 **NFT ownership (ERC-721, ERC-1155, XRPL NFToken)**:
@@ -78,6 +80,7 @@ X-API-Key: insr_live_...
   "label": "Bored Ape holder"
 }
 ```
+- `contractAddress` is the NFT contract (0x + 40 hex on EVM). `"native"` with `nft_ownership` is a `400`; use `token_balance` to check the native coin.
 
 **EAS attestation (via compliance template)**:
 ```json
@@ -180,9 +183,9 @@ Verify the JWT with any standard library pointed at `https://insumermodel.com/.w
 | `ok` | Top-level success flag |
 | `data.attestation.pass` | True only if ALL conditions met |
 | `data.attestation.results[].met` | Per-condition boolean |
-| `data.attestation.results[].evaluatedCondition` | Canonical form of the condition that was actually evaluated (may differ from your input if the API normalized operators or defaults) |
+| `data.attestation.results[].evaluatedCondition` | Canonical form of the condition that was actually evaluated (may differ from your input where the API normalized it, for example the operator it applied) |
 | `data.attestation.results[].conditionHash` | SHA-256 of `evaluatedCondition`, prefixed `0x`. Callers can recompute to verify the condition wasn't tampered with. |
-| `data.attestation.results[].blockNumber` | Hex block number (all 32 EVM chains; Solana uses `slot`, XRPL uses `ledgerIndex`). API returns 503 if the anchor can't be captured rather than signing a partial result. |
+| `data.attestation.results[].blockNumber` | Hex block number (all 31 EVM chains; Solana uses `slot`, XRPL uses `ledgerIndex`). API returns 503 if the anchor can't be captured rather than signing a partial result. |
 | `data.attestation.results[].blockTimestamp` | ISO 8601 timestamp of the evaluation block |
 | `data.sig` | Base64 P1363 ES256 signature (88 chars). The preimage is selected by `data.kid`: `insumer-attest-v2` signs `"insumer.attestation.v2" + "\n" + canonical_json({v:2,id,pass,results,attestedAt})` (keys sorted recursively); `insumer-attest-v1` signs the bare `JSON.stringify({id,pass,results,attestedAt})`. `expiresAt` is outside the preimage. |
 | `data.pqSig` / `data.pqKid` | Post-quantum companion (ML-DSA-65, FIPS 204) over the post-quantum domain tag plus the same classical preimage; `pqKid` is `insumer-attest-pq1`, an RFC 9964 `AKP` entry in the same JWKS. Additive beside `sig`/`kid`. |
@@ -195,7 +198,7 @@ Verify the JWT with any standard library pointed at `https://insumermodel.com/.w
 
 | Status | Meaning |
 |---|---|
-| `400` | Validation error (malformed wallet, unknown chain, missing required field) |
+| `400` | Validation error (malformed wallet or contract address, unknown chain, missing required field, a `decimals` value that differs from the token's own) |
 | `401` | Missing or invalid `X-API-Key` |
 | `402` | Insufficient credits — top up or upgrade tier |
 | `503` | Upstream data source unavailable. No attestation signed, no credits charged. Retry after a short delay. |
@@ -215,7 +218,7 @@ All errors follow the `ErrorEnvelope` shape:
 
 ## `POST /v1/trust`
 
-Curated 36-check wallet trust profile across 4 dimensions. Returns a signed profile with per-check booleans and an overall summary.
+Curated wallet trust profile: 44 base checks across 25 chains in 5 dimensions, up to 49 checks across 27 chains in 9 dimensions with the optional wallets. Returns a signed profile with per-check booleans and an overall summary.
 
 ### Request
 
@@ -230,12 +233,15 @@ X-API-Key: insr_live_...
   "wallet": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
   "solanaWallet": "...",
   "xrplWallet": "...",
-  "bitcoinWallet": "..."
+  "bitcoinWallet": "...",
+  "tronWallet": "...",
+  "stellarWallet": "...",
+  "suiWallet": "..."
 }
 ```
 
 - `wallet` is required (EVM).
-- `solanaWallet`, `xrplWallet`, `bitcoinWallet` are all optional; each unlocks additional checks.
+- `solanaWallet`, `xrplWallet`, `bitcoinWallet`, `tronWallet`, `stellarWallet`, `suiWallet` are all optional; each unlocks additional checks.
 - Optional `proof: "merkle"` costs 6 credits instead of 3.
 
 ### Response shape
@@ -252,21 +258,23 @@ X-API-Key: insr_live_...
         "stablecoins": {
           "checks": [ { "label": "...", "met": true, "chainId": 1, "..." } ],
           "passCount": 3,
-          "failCount": 4,
-          "total": 7
+          "failCount": 23,
+          "total": 26
         },
-        "governance": { "checks": [ ... ], "passCount": 0, "failCount": 5, "total": 5 },
-        "nfts":       { "checks": [ ... ], "passCount": 0, "failCount": 5, "total": 5 },
-        "staking":    { "checks": [ ... ], "passCount": 0, "failCount": 5, "total": 5 },
+        "governance": { "checks": [ ... ], "passCount": 0, "failCount": 4, "total": 4 },
+        "nfts":       { "checks": [ ... ], "passCount": 0, "failCount": 3, "total": 3 },
+        "staking":    { "checks": [ ... ], "passCount": 0, "failCount": 3, "total": 3 },
+        "institutional_stablecoins": { "checks": [ ... ], "passCount": 0, "failCount": 2, "notEvaluatedCount": 6, "total": 8 },
         "solana":     { "checks": [ ... ], "...": "only present when solanaWallet provided" },
         "xrpl":       { "checks": [ ... ], "...": "only present when xrplWallet provided" }
       },
       "summary": {
-        "totalChecks": 36,
+        "totalChecks": 44,
         "totalPassed": 3,
-        "totalFailed": 33,
+        "totalFailed": 35,
+        "totalNotEvaluated": 6,
         "dimensionsWithActivity": 1,
-        "dimensionsChecked": 4
+        "dimensionsChecked": 5
       },
       "profiledAt": "2026-04-13T12:00:00.000Z",
       "expiresAt": "2026-04-13T12:30:00.000Z"
@@ -285,15 +293,17 @@ X-API-Key: insr_live_...
 
 ### Dimensions
 
-- **stablecoins** — USDC + USDT across 7 EVM chains (14 checks)
+- **stablecoins**: USDC and USDT across EVM chains (26 checks)
 - **governance** — governance token holdings (UNI, AAVE, COMP, etc.)
 - **nfts** — blue-chip NFT collections
 - **staking** — staking / LP positions
+- **institutional_stablecoins**: EURCV, USDCV, USDC and BENJI across Ethereum, Solana, XRPL, Stellar and Sui (8 checks, always present; the Solana, XRPL, Stellar and Sui entries carry `evaluated: false` unless the matching wallet is supplied)
 - **solana** — Solana USDC (only when `solanaWallet` provided)
 - **xrpl** — XRPL stablecoins (only when `xrplWallet` provided)
 - **bitcoin** — native BTC balance (only when `bitcoinWallet` provided)
+- **tron**: Tron USDT (only when `tronWallet` provided)
 
-Base profile is 44 checks across 25 chains. With optional Solana + XRPL + Bitcoin + Tron wallets it reaches up to 49 checks across 27 chains total.
+Base profile is 44 checks across 25 chains in 5 dimensions. With optional Solana + XRPL + Bitcoin + Tron wallets it reaches up to 49 checks across 27 chains in 9 dimensions.
 
 ### Credits
 
@@ -321,5 +331,8 @@ See `../examples/gate-express.ts` for a live-verified Node/TypeScript example us
 - **Solana**: `"solana"`
 - **XRPL**: `"xrpl"`
 - **Bitcoin**: `"bitcoin"`
+- **Tron**: `"tron"`
+- **Stellar**: `"stellar"`
+- **Sui**: `"sui"`
 
 For the authoritative list of supported chains, GET <https://insumermodel.com/openapi.yaml> and inspect the `ChainId` schema.

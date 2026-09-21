@@ -46,7 +46,7 @@ Standard mode deliberately returns only pass/fail. Don't defeat that by:
 
 If the developer wants raw balance access, they should use a chain explorer directly — not InsumerAPI. The whole point of this primitive is that the counterparty learns eligibility without learning holdings.
 
-## 4. Never hard-code `decimals: 18` for USDC/USDT/USDC.e
+## 4. Never send a guessed `decimals`
 
 **Wrong:**
 ```ts
@@ -55,7 +55,7 @@ If the developer wants raw balance access, they should use a chain explorer dire
   contractAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", // USDC Base
   chainId: 8453,
   threshold: "100",
-  // decimals omitted → API defaults to 18 → threshold check silently fails
+  decimals: 18, // guessed. This token has 6, so the API rejects the request with a 400 naming the token's own value
 }
 ```
 
@@ -66,13 +66,13 @@ If the developer wants raw balance access, they should use a chain explorer dire
   contractAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
   chainId: 8453,
   threshold: "100",
-  decimals: 6, // USDC is always 6
+  // no decimals field: the API reads the token's own decimals from the chain
 }
 ```
 
-USDC, USDT, USDC.e are all 6 decimals on every chain. The API defaults to 18 when `decimals` is omitted. Getting this wrong makes every wallet look like it has effectively zero — the threshold check fails silently and the developer has no idea why.
+`decimals` is optional. Leave it out: the token's own decimals are always read from the chain. If sent it is only a cross-check, and a value that differs from the token's own decimals is rejected with a `400` that names the token's value. A value that is not an integer from 0 to 100 is also a `400`.
 
-Always set `decimals` explicitly for any stablecoin condition.
+Do not guess from the symbol. The same stablecoin can have different decimals on different chains, so a constant carried from one chain to another turns working calls into `400`s. The `threshold` is in display units (`"100"` means 100 USDC) either way.
 
 ## 5. Always use the public API URL
 
@@ -128,7 +128,7 @@ If the developer wants short-lived caching for hot paths, cache the full signed 
 
 ## 8. Never speculate about upstream data sources
 
-The API is powered by a stack of upstream blockchain data sources across 38 chains. The specific providers are not part of the public API surface. If the developer asks "how does the API get its data?", answer with "upstream blockchain data sources across 38 chains" and stop — do not guess at provider names, do not invent architecture diagrams, do not name specific RPCs. The API's job is to give a signed boolean; the developer's job is to verify it. What's behind the primitive is not a detail they need to integrate against.
+The API is powered by a stack of upstream blockchain data sources across 37 chains. The specific providers are not part of the public API surface. If the developer asks "how does the API get its data?", answer with "upstream blockchain data sources across 37 chains" and stop. Do not guess at provider names, do not invent architecture diagrams, do not name specific RPCs. The API's job is to give a signed boolean; the developer's job is to verify it. What's behind the primitive is not a detail they need to integrate against.
 
 ## 9. Never push upsell copy into the generated code
 
