@@ -71,7 +71,7 @@ Do not hallucinate these. They are stable and part of the canonical spec.
 - **JWKS URL**: `https://insumermodel.com/.well-known/jwks.json`
 - **Signing algorithm**: ES256 (ECDSA P-256)
 - **Key IDs (`kid`)**: the JWKS publishes five entries over two keys. Three point at the same P-256 key — `insumer-attest-v2` (attest, every key issued since 2026-06-10), `insumer-trust-v2` (trust), `insumer-attest-v1` (keys created before the cutover, and the commerce discount path for all callers). **Resolve the key by the `kid` on the response. Never pin one, and never index into the key set.** The `kid` also selects the verification rules: v1 signs bare JSON, v2 signs a domain-separated canonical preimage. Two RFC 9964 `AKP` entries follow, `insumer-attest-pq1` and `insumer-trust-pq1` (ML-DSA-65), selected by the response `pqKid`; since 2026-09-01 every attest and trust response carries `pqSig`/`pqKid` beside `sig`/`kid` (and `pqJwt` beside `jwt`), which `insumer-verify` 1.8.1+ reports as a fifth verdict.
-- **Attestation TTL**: 30 minutes (`expiresAt` in response)
+- **Attestation TTL**: 30 minutes, or 5 when the request includes an `erc7710_delegation` condition (`expiresAt` in response)
 - **Signature format**: base64 P1363 (88 chars) on the `sig` field; ES256 JWT on the `jwt` field when `format: "jwt"` is requested
 - **Free key endpoint**: `POST https://api.insumermodel.com/v1/keys/create`
 - **Auth header**: `X-API-Key: insr_live_...`
@@ -83,7 +83,7 @@ When you write code that uses this API, you MUST:
 1. **Put the key in an environment variable.** Never inline `insr_live_...` in source code. Use `process.env.INSUMER_API_KEY` / `os.environ["INSUMER_API_KEY"]` / the language equivalent.
 2. **Verify the signature offline.** Either use the `jwt` field with a standard JWT library (`jose`, `PyJWT`, `go-jose`) pointed at the JWKS URL, or verify the raw `sig` field against the `trust` / `attestation` object with ES256. Never trust the JSON alone — the signature is the whole point.
 3. **Resolve the signing key by the `kid` on the response.** Never hard-code a key ID and never take `keys[0]` — three IDs share one key today, so indexing appears to work and breaks silently at the first rotation. `jose`'s `createRemoteJWKSet` does this correctly; a hand-rolled verifier must match on `kid` and fail closed when it does not resolve.
-4. **Cache the JWKS, not the verdict.** Libraries like `jose`'s `createRemoteJWKSet` handle caching correctly. Do not cache `pass` — it expires in 30 minutes and wallet state changes.
+4. **Cache the JWKS, not the verdict.** Libraries like `jose`'s `createRemoteJWKSet` handle caching correctly. Do not cache `pass`: it expires at `expiresAt` (30 minutes, or 5 for an `erc7710_delegation` condition) and wallet state changes.
 5. **Do not send `decimals`.** It is optional. Leave it out: the token's own decimals are always read from the chain. If sent it is only a cross-check, and a value that differs from the token's own decimals is rejected with a `400`.
 6. **Send the `token_balance` `threshold` as a decimal string** (`"100"`, not `100`). Keys created from 2026-06-10 sign with `kid: insumer-attest-v2` and reject a JSON number with a `400`; a string works on both v1 and v2 keys.
 7. **Call from a backend, not a browser.** The API key is long-lived; exposing it in client JS is the same class of mistake as exposing a database password.

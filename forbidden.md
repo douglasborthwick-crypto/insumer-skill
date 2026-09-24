@@ -119,10 +119,11 @@ if (cache.has(wallet)) return cache.get(wallet);
 ```ts
 // Cache the JWKS (jose's createRemoteJWKSet does this for you)
 // Do NOT cache pass/fail — wallet state changes and the attestation
-// has a 30-minute TTL built in (`expiresAt` in the response).
+// has its own expiry built in (`expiresAt` in the response: 30 minutes,
+// or 5 when the request includes an erc7710_delegation condition).
 ```
 
-Cache the JWKS, not the verdict. The attestation is good for 30 minutes (`expiresAt` in the response). After that, wallet state may have changed and you need a fresh signature.
+Cache the JWKS, not the verdict. The attestation is good until `expiresAt` in the response: 30 minutes, or 5 when the request includes an `erc7710_delegation` condition. After that, wallet state may have changed and you need a fresh signature.
 
 If the developer wants short-lived caching for hot paths, cache the full signed response (not just the boolean) and re-verify the signature on each read — it's cheap and it catches the "this was signed 29 minutes ago" case automatically.
 

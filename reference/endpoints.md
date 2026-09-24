@@ -160,10 +160,10 @@ unchanged; the preimage differs.
 
 Standard claims:
 - `iss`: `"https://api.insumermodel.com"`
-- `sub`: the wallet address
+- `sub`: the wallet a condition in the request evaluated (with conditions across chain families, the first in the order EVM, Solana, XRPL, Bitcoin, Tron, Stellar, Sui)
 - `jti`: the attestation ID (e.g. `"ATST-85ADCD1399EF9C2A"`)
 - `iat`: issued-at, Unix seconds
-- `exp`: expires-at, Unix seconds (always `iat + 1800` — 30 minutes)
+- `exp`: expires-at, Unix seconds (`iat + 1800`, 30 minutes; `iat + 300` when the request includes an `erc7710_delegation` condition)
 
 Custom claims:
 - `pass`: overall boolean (true only if all conditions met)
