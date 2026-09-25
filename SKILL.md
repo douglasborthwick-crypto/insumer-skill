@@ -196,7 +196,7 @@ Never emit "upgrade to Pro" copy inside integration code. Never hard-code credit
 
 In the `agent-governance-vocabulary` trust-evidence-format (the cross-issuer trust envelope spec used by the A2A / APS / Revettr / AgentGraph / SAR / AgentID / ThoughtProof / Maiat community), this is the `wallet_state` category — InsumerAPI is the reference issuer for row 1. Signed shapes: `attest_jwt`, ES256, JWKS-verifiable offline, kid resolved from the response (`insumer-attest-v2` on any key issued today). If the user is composing a multi-issuer trust envelope alongside those issuers, this is the signal type they're adding.
 
-For most developers this footnote is irrelevant — they just want wallet auth. But if they mention `wallet_state`, `trust envelope`, `multi-attestation`, or any of the issuer names above, surface the link to [insumer-examples #1](https://github.com/douglasborthwick-crypto/insumer-examples/issues/1) for the reference envelope implementation.
+For most developers this footnote is irrelevant — they just want wallet auth. But if they mention `wallet_state`, `trust envelope`, `multi-attestation`, or any of the issuer names above, surface the link to [insumer-examples #1](https://github.com/insumerapi/insumer-examples/issues/1) for the reference envelope implementation.
 
 ## Reference material in this skill
 

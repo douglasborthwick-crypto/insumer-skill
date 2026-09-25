@@ -20,7 +20,7 @@ Concretely, the skill contains:
 ## Install
 
 ```bash
-git clone https://github.com/douglasborthwick-crypto/insumer-skill.git ~/.claude/skills/insumer
+git clone https://github.com/insumerapi/insumer-skill.git ~/.claude/skills/insumer
 ```
 
 The Smithery listing does not currently serve installs, so install from GitHub as above.
@@ -85,7 +85,7 @@ The `examples/gate-express.ts` file is a working Express server. Verify the full
 mkdir /tmp/insumer-skill-try && cd /tmp/insumer-skill-try
 npm init -y >/dev/null
 npm install express jose tsx typescript @types/express @types/node >/dev/null
-curl -sO https://raw.githubusercontent.com/douglasborthwick-crypto/insumer-skill/main/examples/gate-express.ts
+curl -sO https://raw.githubusercontent.com/insumerapi/insumer-skill/main/examples/gate-express.ts
 
 # Get a free key (if you haven't already)
 curl -s -X POST https://api.insumermodel.com/v1/keys/create \
@@ -121,7 +121,7 @@ The 403 response includes `attestationId`, `blockNumber`, and `blockTimestamp` â
 
 ## See also
 
-For multi-issuer trust envelope builders: this skill ships the `wallet_state` category of the trust-evidence-format as defined in [agent-governance-vocabulary](https://github.com/aeoess/agent-governance-vocabulary). For the full multi-issuer envelope pattern (10 issuers, 12 dimensions, JWKS-verifiable offline), see [insumer-examples #1](https://github.com/douglasborthwick-crypto/insumer-examples/issues/1).
+For multi-issuer trust envelope builders: this skill ships the `wallet_state` category of the trust-evidence-format as defined in [agent-governance-vocabulary](https://github.com/aeoess/agent-governance-vocabulary). For the full multi-issuer envelope pattern (10 issuers, 12 dimensions, JWKS-verifiable offline), see [insumer-examples #1](https://github.com/insumerapi/insumer-examples/issues/1).
 
 ## License
 
