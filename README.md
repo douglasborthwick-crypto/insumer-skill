@@ -19,19 +19,13 @@ Concretely, the skill contains:
 
 ## Install
 
-### Option A — Smithery (one line, once it indexes)
-
-```bash
-smithery install insumer-skill
-```
-
-### Option B — Manual
-
 ```bash
 git clone https://github.com/douglasborthwick-crypto/insumer-skill.git ~/.claude/skills/insumer
 ```
 
-Claude Code picks up any skill inside `~/.claude/skills/`. Restart Claude Code after copying and the skill will be available on the next conversation where you mention wallet auth, token gating, condition-based access, or any of the trigger phrases in `SKILL.md`.
+The Smithery listing does not currently serve installs, so install from GitHub as above.
+
+Claude Code picks up any skill one level inside `~/.claude/skills/`, which is where this clone puts `SKILL.md`. Restart Claude Code after copying and the skill will be available on the next conversation where you mention wallet auth, token gating, condition-based access, or any of the trigger phrases in `SKILL.md`.
 
 ## First use
 
